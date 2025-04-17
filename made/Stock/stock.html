@@ -1,352 +1,148 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SCHD 배당재투자계산기 <!-- — 설탕 버전--></title>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>심플 배당주 계산기(원화)</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(150deg, #e3fef2, #d1f7e6);
-      color: #065a4e;
-      padding: 20px;
+      background-color: #f4f4f4;
+      padding: 2em;
+      max-width: 600px;
+      margin: auto;
     }
-    h1 { text-align: center; margin-bottom: 20px; }
-    .card {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(8px);
-      border: 2px solid #9cdbd3;
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 20px;
+    h1 {
+      color: #2c3e50;
+      font-size: 1.8em;
     }
-    .btn {
-      background: #65c4b0;
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      padding: 10px 18px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    .btn:hover { background: #4aa891; }
-    .btn-group-row {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 20px;
-    }
-    .share-btn {
-      text-align: center;
-      margin-top: 20px;
-    }
-    .flex { display: flex; gap: 20px; flex-wrap: wrap; }
-    .flex > .card { flex: 1 1 45%; }
-    .card.double { flex: 1 1 100%; }
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    .form-group label {
-      font-size: 14px;
-      margin-bottom: 6px;
-      text-align: center;
-    }
-    .form-group input[type=number] {
-      width: 80%;
-      padding: 8px 12px;
-      font-size: 16px;
-      border: 1px solid #9cdbd3;
-      border-radius: 8px;
-    }
-    .tax-group .tax-input,
-    .freq-group .freq-input {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    .tax-group input[type=number],
-    .freq-group input[type=number] {
-      width: 60px;
-    }
-    .btn-inline-group {
-      display: flex;
-      gap: 6px;
-    }
-    .tax-btn, .freq-btn {
-      background: #fff;
-      color: #065a4e;
-      border: 1px solid #9cdbd3;
-      border-radius: 8px;
-      padding: 6px 12px;
-      cursor: pointer;
-    }
-    .tax-btn.selected, .freq-btn.selected {
-      background: #65c4b0;
-      color: #fff;
-    }
-    #chart {
-      width: 100% !important;
-      height: 400px !important;
-    }
-    table {
+    label, input {
+      display: block;
+      margin-bottom: 1em;
+      font-size: 1rem;
       width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
     }
-    th, td {
-      border: 1px solid #9cdbd3;
-      padding: 8px;
-      text-align: center;
-      font-size: 14px;
+    input {
+      padding: 0.5em;
+      box-sizing: border-box;
+      border-radius: 5px;
+      border: 1px solid #ccc;
     }
-    th { background: #e3fcef; }
-    #input-summary p, #result-summary p {
-      margin: 8px 0;
-      font-size: 16px;
-      font-weight: 600;
-      text-align: center;
+    button {
+      width: 100%;
+      padding: 0.8em;
+      font-size: 1rem;
+      border: none;
+      background-color: #3498db;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 1em;
     }
-    #error-msg {
-      color: red;
-      text-align: center;
-      margin: 10px 0;
+    button:hover {
+      background-color: #2980b9;
+    }
+    .result {
+      margin-top: 2em;
       font-weight: bold;
+      word-break: keep-all;
     }
-    .right-align { text-align: right; margin-top: 10px; }
+
+    .wrap-container {
+      margin-top: 2em;
+      text-align: center;
+    }
+    .home-image {
+      width: 100%;
+      max-width: 300px;
+      height: auto;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 3em;
+      font-size: 0.9em;
+      color: #777;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 1em;
+      }
+      h1 {
+        font-size: 1.4em;
+      }
+      button {
+        font-size: 0.9em;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>🍃 SCHD 배당재투자계산기</h1>
-  <p align="center">SCHD 배당재투자로 복리의 놀라움을 느껴보세요 🚀</p>
-  <!-- 입력 폼 카드 -->
-  <div class="card">
-    <div class="form-group"><label>초기 투자금 (만원)</label><input id="initial" type="number" value="100"></div>
-    <div class="form-group"><label>월 매수금액 (만원)</label><input id="monthly" type="number" value="50"></div>
-    <div class="form-group"><label>투자 기간 (년)</label><input id="years" type="number" value="10"></div>
-    <div class="form-group"><label>시가 배당률 (%)</label><input id="divYield" type="number" value="3.5" step="0.1"></div>
-    <div class="form-group"><label>배당 성장률 (%)</label><input id="divGrowth" type="number" value="12" step="0.1"></div>
-    <div class="form-group"><label>주당 가격 (만원)</label><input id="price" type="number" value="4.0" step="0.1"></div>
-    <div class="form-group"><label>주가 상승률 (%)</label><input id="priceGrowth" type="number" value="10" step="0.1"></div>
-    <div class="form-group tax-group">
-      <label>과세 비율</label>
-      <div class="tax-input">
-        <input id="taxRateInput" type="number" value="15.4" step="0.1"><span>%</span>
-        <div class="btn-inline-group">
-          <button class="tax-btn selected" data-val="15.4">15.4%</button>
-          <button class="tax-btn" data-val="0">0%</button>
-        </div>
-      </div>
-    </div>
-    <div class="form-group freq-group">
-      <label>배당 주기</label>
-      <div class="freq-input">
-        <input id="freqCount" type="number" value="4" min="1"><span>회/년</span>
-        <div class="btn-inline-group">
-          <button class="freq-btn" data-val="12">월</button>
-          <button class="freq-btn selected" data-val="4">분기</button>
-          <button class="freq-btn" data-val="1">연</button>
-        </div>
-      </div>
-    </div>
-    <div id="error-msg"></div>
-    <div style="text-align:center;"><button class="btn" onclick="simulate()">계산하기</button></div>
-  </div>
 
-  <!-- 결과 영역 (초기 숨김) -->
-  <div class="card double" id="output-section" style="display:none;">
-      <!-- 요약 카드 -->
-  <div class="flex">
-    <div class="card" id="input-summary"></div>
-    <div class="card" id="result-summary"></div>
-  </div>
-  <br>
-    <canvas id="chart"></canvas>
-    <!-- CSV/엑셀 다운로드 버튼 -->
-    <div class="right-align">
-      <button class="btn" onclick="downloadExcel()">CSV/엑셀 다운로드</button>
-    </div>
-    <table id="data-table">
-      <thead><tr><th>연도</th><th>투자원금</th><th>재투자금액</th><th>배당금</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <!--<h1> </h1>--> 
+  <label>
+  <br><font size=6 style="font-weight:900;">💹 심플 배당주 계산기(원화)</font> <a style="color: #33d45b">ver 0.0.5</a></br>
+</label>
+
+  <label>
+    <a style="color: #37b7fe">모아볼 주:</a>
+    <input type="number" id="num" placeholder="예: 22691">
+  </label>
+
+  <label>
+    <a style="color: #37b7fe">예상 배당락:</a>
+    <input type="number" id="num1" placeholder="예: 1158">
+  </label>
+
+  <label>
+    <a style="color: #37b7fe">1주당 가격:</a>
+    <input type="number" id="num2" placeholder="현재 1주당 가격">
+  </label>
+
+  <label>
+    <a style="color: #37b7fe">구입한 주:</a>
+    <input type="number" id="num3" placeholder="구입할 주식 수">
+  </label>
+
+  <button onclick="calculate()">계산하기</button>
+
+  <div class="result" id="output"></div>
 
   <script>
-    let chartInst;
-    let latestTable = [];
+    function calculate() {
+      const num = parseFloat(document.getElementById('num').value);
+      const num1 = parseFloat(document.getElementById('num1').value);
+      const num2 = parseFloat(document.getElementById('num2').value);
+      const num3 = parseFloat(document.getElementById('num3').value);
 
-    function fmtKRW(v) {
-      if (v >= 1e12) return (v / 1e12).toFixed(1).replace(/\.0$/, '') + '조';
-      if (v >= 1e8)  return (v / 1e8 ).toFixed(1).replace(/\.0$/, '') + '억';
-      if (v >= 1e4)  return (v / 1e4 ).toLocaleString('ko-KR') + '만';
-      return v.toLocaleString('ko-KR') + '원';
-    }
-
-    document.querySelectorAll('.tax-btn').forEach(btn => {
-      btn.onclick = () => {
-        document.querySelectorAll('.tax-btn').forEach(x => x.classList.remove('selected'));
-        btn.classList.add('selected');
-        document.getElementById('taxRateInput').value = btn.dataset.val;
-      };
-    });
-    document.getElementById('taxRateInput').oninput = () =>
-      document.querySelectorAll('.tax-btn').forEach(x => x.classList.remove('selected'));
-
-    document.querySelectorAll('.freq-btn').forEach(btn => {
-      btn.onclick = () => {
-        document.querySelectorAll('.freq-btn').forEach(x => x.classList.remove('selected'));
-        btn.classList.add('selected');
-        document.getElementById('freqCount').value = btn.dataset.val;
-      };
-    });
-
-    function simulate() {
-      const init     = +document.getElementById('initial').value * 10000;
-      const monthly  = +document.getElementById('monthly').value * 10000;
-      const years    = +document.getElementById('years').value;
-      const divY     = +document.getElementById('divYield').value / 100;
-      const divG     = +document.getElementById('divGrowth').value / 100;
-      const price0   = +document.getElementById('price').value * 10000;
-      const pG       = +document.getElementById('priceGrowth').value / 100;
-      const tax      = +document.getElementById('taxRateInput').value / 100;
-      const freq     = +document.getElementById('freqCount').value;
-
-      let shares = init / price0;
-      let price = price0;
-      let divPS = price0 * divY;
-      let grossAcc = 0, netAcc = 0;
-      const table = [];
-
-      for (let y = 1; y <= years; y++) {
-        price *= (1 + pG);
-        divPS *= (1 + divG);
-        for (let m = 1; m <= 12; m++) {
-          shares += monthly / price;
-          if (m % (12 / freq) === 0) {
-            const gross = Math.floor(shares * (divPS / freq));
-            const net = Math.floor(gross * (1 - tax));
-            grossAcc += gross;
-            netAcc += net;
-            shares += net / price;
-          }
-        }
-        table.push({
-          year: `${y}년`,
-          principal: init + monthly * 12 * y,
-          reinvest: netAcc,
-          dividend: grossAcc
-        });
+      if (isNaN(num) || isNaN(num1) || isNaN(num2) || isNaN(num3)) {
+        document.getElementById('output').innerHTML = "⚠️ 모든 입력란을 채워주세요!";
+        return;
       }
 
-      latestTable = table;
-      const last = table[table.length - 1];
-      const totalValue = Math.floor(shares * price);
-      const annualNet = Math.floor(shares * divPS * (1 - tax));
-      const monthlyNet = Math.floor(annualNet / 12);
+      const YB = num * num1;
+      const afterTax = YB * (1 - 0.154);
+      const ZG = num2 * num3;
 
-      document.getElementById('input-summary').innerHTML = `
-        <p>초기투자금: ${fmtKRW(init)}</p>
-        <p>월 투자금: ${fmtKRW(monthly)}</p>
-        <p>시가배당률: ${(divY * 100).toFixed(1)}%</p>
-        <p>투자기간: ${years}년</p>
-        <p>배당성장률: ${(divG * 100).toFixed(1)}%</p>
-      `;
-
-      document.getElementById('result-summary').innerHTML = `
-        <p><strong>${years}년 뒤</strong></p>
-        <p>총 투자금: ${fmtKRW(last.principal)}</p>
-        <p>총 평가금액: ${fmtKRW(totalValue)}</p>
-        <p style="color:#dc3545">월 배당금: ${fmtKRW(monthlyNet)}</p>
-        <p style="color:#dc3545">연 배당금: ${fmtKRW(annualNet)}</p>
-      `;
-
-      document.querySelector('#data-table tbody').innerHTML = table.map(r => `
-        <tr>
-          <td>${r.year}</td>
-          <td>${fmtKRW(r.principal)}</td>
-          <td>${fmtKRW(r.reinvest)}</td>
-          <td>${fmtKRW(r.dividend)}</td>
-        </tr>
-      `).join('');
-
-      if (chartInst) chartInst.destroy();
-      chartInst = new Chart(document.getElementById('chart'), {
-        type: 'bar',
-        data: {
-          labels: table.map(r => r.year),
-          datasets: [
-            { label: '투자원금', data: table.map(r => r.principal / 10000), backgroundColor: '#4187f6', stack: 'a' },
-            { label: '재투자금액', data: table.map(r => r.reinvest / 10000), backgroundColor: '#3ec07e', stack: 'a' },
-            { label: '배당금', data: table.map(r => r.dividend / 10000), backgroundColor: '#f26b7a', stack: 'a' }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            tooltip: {
-              callbacks: {
-                label: ctx => `${ctx.dataset.label}: ${fmtKRW(ctx.raw * 10000)}`
-              }
-            }
-          },
-          scales: {
-            x: { stacked: true },
-            y: { stacked: true, beginAtZero: true, ticks: { callback: v => v.toLocaleString() + '만' } }
-          }
-        }
-      });
-
-      document.getElementById('output-section').style.display = 'block';
-    }
-
-    function downloadChart() {
-      const link = document.createElement('a');
-      link.href = document.getElementById('chart').toDataURL();
-      link.download = 'schd_chart.png';
-      link.click();
-    }
-
-    function downloadExcel() {
-      const ws = XLSX.utils.json_to_sheet(latestTable.map(r => ({
-        연도: r.year,
-        투자원금: r.principal,
-        재투자금액: r.reinvest,
-        배당금: r.dividend
-      })));
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'SCHD');
-      XLSX.writeFile(wb, 'SCHD_계산결과.xlsx');
-    }
-
-    function copyShareLink() {
-      navigator.clipboard.writeText(location.href).then(() => {
-        alert("링크가 복사되었어요! ✨");
-      });
+      document.getElementById('output').innerHTML =
+        `총 예상 배당금: <strong>${YB.toLocaleString()}원</strong><br>` +
+        `세후 예상 배당금 (15.4% 공제): <strong>${afterTax.toLocaleString()}원</strong><br>` +
+        `총 예상 구입가격: <strong>${ZG.toLocaleString()}원</strong>`;
     }
   </script>
 
-</body>
-    <!-- 공유 버튼 -->
-    <div class="share-btn">
-      <button class="btn" onclick="copyShareLink()">🔗 결과 공유 링크 복사</button>
+  <div class="wrap-container">
+    <div class="home-container">
+
     </div>
-<br>
-   <div align="right">
-    <script width="0.5px" height="0.5px"  type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="Luna0x03" data-color="#BD5FFF" data-emoji="" data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#ffffff" data-coffee-color="#FFDD00" ></script>
-  </div>
-  by. <a href="https://github.com/Luna0x03">Luna0x03</a>
+  </div>  
+  <script width="5px" height="5px"  type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="Luna0x03" data-color="#BD5FFF" data-emoji="" data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#ffffff" data-coffee-color="#FFDD00" ></script>
+</body>
 
-  <footer> 
-    <div align="center"> 
-      <small>Copyright &copy; Kurai Luna(Luna0x03)</small>
-    </div>  
-  </footer>
+by. <a href="https://github.com/Luna0x03">Luna0x03</a>
 
+<footer>  
+  <small>Copyright &copy; Kurai Luna(Luna0x03)</small>
+</footer>
 </html>
